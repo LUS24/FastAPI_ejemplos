@@ -41,6 +41,7 @@ export default {
       })
         .then(res => {
           console.log(res)
+          alert(res.data.message)
         })
         .catch(res => {
           alert("Hubo un error en la carga de los archivos")
