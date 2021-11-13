@@ -35,6 +35,7 @@ export default {
       })
         .then(res => {
           console.log(res)
+          alert(JSON.parse(res.data).message)
         })
     }
   },

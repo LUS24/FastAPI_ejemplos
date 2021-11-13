@@ -1,4 +1,4 @@
-import shutil, os
+import shutil, os, json
 from typing import List
 from fastapi import FastAPI, UploadFile, File
 
@@ -6,6 +6,19 @@ from fastapi import FastAPI, UploadFile, File
 # https://stackoverflow.com/questions/65635346/how-can-i-enable-cors-in-fastapi
 
 from fastapi.middleware.cors import CORSMiddleware
+
+## Helpers
+
+
+def crear_carpeta(ruta):
+    try:
+        os.makedirs(ruta)
+        print(f'Carpeta "{ruta}" creada')
+        return True
+    except FileExistsError:
+        print("La carpeta ya existe")
+        return False
+
 
 app = FastAPI()
 
@@ -20,20 +33,25 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
 @app.get("/")
 async def root():
     return {"mesage": "Hello World"}
 
 
 @app.post("/upload/file")
-async def root(file: UploadFile = File(...)): 
+async def root(file: UploadFile = File(...)):
     # IMPORTANTE: nombre del parámetro, en este caso file tiene que coincidir con el nombre
     # del objeto agregado al FormData en el front end.
+    crear_carpeta("uploaded")
+
     with open(os.path.join("uploaded", file.filename), "wb") as buffer:
         shutil.copyfileobj(file.file, buffer)
 
-
-    return {"file_name": file.filename}
+    return json.dumps({
+        "file_name": file.filename,
+        "message": "Upload successful"
+        })
 
 
 @app.post("/upload/files")
@@ -43,8 +61,8 @@ async def root(files: List[UploadFile] = File(...)):
         with open(os.path.join("uploaded", file.filename), "wb") as buffer:
             shutil.copyfileobj(file.file, buffer)
 
+    return json.dumps({"message": "Upload successful"})
 
-    return {"message": "Upload successful"}
 
 # pip install fastapi
 # pip install "uvicorn[standard]"
